@@ -1,5 +1,5 @@
 Package: icjr
-Title: Repeated Elastic-Net Feature Selection Models
+Title: Personal R Helpers for Data Analysis
 Version: 0.0.0.9000
 Authors@R:
     person(
@@ -8,10 +8,9 @@ Authors@R:
       role = c("aut", "cre"),
       email = "ijenkins@fredhutch.org"
     )
-Description: Tools for repeated cross-validated elastic-net modeling of
-    high-dimensional feature matrices with Gaussian, binomial, Poisson, and
-    Cox outcomes. The package supports unpenalized adjustment covariates,
-    configurable feature filtering, and feature-selection stability summaries.
+Description: Personal R helpers for data analysis and research workflows.
+    Functions support common data manipulation, modeling, visualization, and
+    reporting tasks.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -19,3 +18,5 @@ RoxygenNote: 8.0.0
 Config/testthat/edition: 3
 Suggests:
     testthat (>= 3.0.0)
+Imports: 
+    rlang
