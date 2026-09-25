@@ -5,5 +5,7 @@
   feature-selection stability summaries.
 - Added repeated binomial elastic-net modeling with explicit event-level coding,
   deviance-based cross-validation, and odds-ratio feature summaries.
+- Added repeated Cox elastic-net modeling with time-to-event validation,
+  event-aware cross-validation, and hazard-ratio feature summaries.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.

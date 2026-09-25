@@ -122,17 +122,23 @@ fit_repeated_cv_glmnet <- function(
       set.seed(seed + repetition - 1L)
     }
 
+    fit_arguments <- list(
+      x = x,
+      y = y,
+      family = family,
+      alpha = alpha,
+      nfolds = nfolds_used,
+      type.measure = type_measure,
+      standardize = FALSE,
+      penalty.factor = penalty_factor
+    )
+
+    if (identical(family, "cox")) {
+      fit_arguments$cox.ties <- "breslow"
+    }
+
     tryCatch(
-      glmnet::cv.glmnet(
-        x = x,
-        y = y,
-        family = family,
-        alpha = alpha,
-        nfolds = nfolds_used,
-        type.measure = type_measure,
-        standardize = FALSE,
-        penalty.factor = penalty_factor
-      ),
+      do.call(glmnet::cv.glmnet, fit_arguments),
       error = function(error) {
         structure(
           list(message = conditionMessage(error)),

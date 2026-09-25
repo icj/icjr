@@ -24,4 +24,5 @@ Imports:
     dplyr,
     glmnet,
     rlang,
+    survival,
     tibble
