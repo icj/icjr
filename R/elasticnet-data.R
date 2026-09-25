@@ -158,7 +158,54 @@ prepare_elasticnet_data <- function(
     )
   }
 
-  x_model <- x[sample_data[[sample_id_name]], , drop = FALSE]
+  if (!is.null(covariate_matrix)) {
+    rownames(covariate_matrix) <- sample_data[[sample_id_name]]
+  }
+
+  modeled_ids <- sample_data[[sample_id_name]]
+
+  matrix_order_ids <- rownames(x)[
+    match(
+      rownames(x),
+      modeled_ids,
+      nomatch = 0L
+    ) >
+      0L
+  ]
+
+  metadata_order <- match(
+    matrix_order_ids,
+    sample_data[[sample_id_name]]
+  )
+
+  if (anyNA(metadata_order)) {
+    rlang::abort(
+      "Internal error: unable to align metadata to feature-matrix sample IDs."
+    )
+  }
+
+  sample_data <- sample_data[metadata_order, , drop = FALSE]
+
+  if (!is.null(covariate_matrix)) {
+    covariate_matrix <- covariate_matrix[metadata_order, , drop = FALSE]
+  }
+
+  x_model <- x[matrix_order_ids, , drop = FALSE]
+
+  if (!identical(rownames(x_model), sample_data[[sample_id_name]])) {
+    rlang::abort(
+      "Internal error: feature-matrix and metadata sample IDs are not aligned."
+    )
+  }
+
+  if (
+    !is.null(covariate_matrix) &&
+      !identical(rownames(covariate_matrix), rownames(x_model))
+  ) {
+    rlang::abort(
+      "Internal error: covariates and feature matrix are not aligned."
+    )
+  }
 
   if (any(!is.finite(x_model))) {
     rlang::abort(

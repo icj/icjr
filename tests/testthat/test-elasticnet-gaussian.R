@@ -173,4 +173,53 @@ test_that("Gaussian elastic-net fit excludes and records incomplete rows", {
     fit$sample_summary$n_samples_modeled,
     nrow(data$x) - 3
   )
+  expect_true(is.character(fit$feature_names))
+  expect_equal(
+    length(fit$feature_names),
+    fit$sample_summary$n_features_modeled
+  )
+})
+
+test_that("Gaussian elastic-net fit is invariant to metadata row order", {
+  data <- simulate_gaussian_data()
+
+  fit_original <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 3,
+    feature_filter = feature_filter_none(),
+    seed = 107
+  )
+
+  shuffled_data <- data$sample_data[
+    sample(seq_len(nrow(data$sample_data))),
+    ,
+    drop = FALSE
+  ]
+
+  fit_shuffled <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = shuffled_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 3,
+    feature_filter = feature_filter_none(),
+    seed = 107
+  )
+
+  expect_identical(
+    fit_original$selected_features,
+    fit_shuffled$selected_features
+  )
+
+  expect_identical(
+    fit_original$covariate_coefficients,
+    fit_shuffled$covariate_coefficients
+  )
 })

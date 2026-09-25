@@ -155,6 +155,7 @@ fit_elasticnet_gaussian <- function(
       ),
       sample_summary = sample_summary,
       selected_features = selected_features,
+      feature_names = design$feature_names,
       covariate_coefficients = covariate_summary,
       repetition_summary = fitted_models$repetition_summary,
       models = if (isTRUE(keep_models)) fitted_models$models else NULL
