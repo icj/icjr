@@ -29,3 +29,45 @@ simulate_gaussian_data <- function(
 
   list(x = x, sample_data = sample_data)
 }
+
+simulate_binomial_data <- function(
+  n_samples = 80,
+  n_features = 20,
+  seed = 2
+) {
+  set.seed(seed)
+
+  x <- matrix(
+    stats::rnorm(n_samples * n_features),
+    nrow = n_samples,
+    ncol = n_features
+  )
+
+  rownames(x) <- paste0("sample_", seq_len(n_samples))
+  colnames(x) <- paste0("feature_", seq_len(n_features))
+
+  sample_data <- tibble::tibble(
+    sample_id = rownames(x),
+    age = stats::rnorm(n_samples, mean = 55, sd = 10),
+    sex = factor(rep(c("female", "male"), length.out = n_samples))
+  ) |>
+    dplyr::mutate(
+      linear_predictor = -0.35 +
+        1.25 * x[, "feature_1"] -
+        1.00 * x[, "feature_2"] +
+        0.03 * age +
+        dplyr::if_else(sex == "male", 0.35, 0),
+      probability = stats::plogis(linear_predictor),
+      outcome = factor(
+        dplyr::if_else(
+          stats::runif(n_samples) < probability,
+          "case",
+          "control"
+        ),
+        levels = c("control", "case")
+      )
+    ) |>
+    dplyr::select(-linear_predictor, -probability)
+
+  list(x = x, sample_data = sample_data)
+}
