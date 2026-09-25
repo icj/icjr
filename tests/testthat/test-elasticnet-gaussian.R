@@ -110,7 +110,7 @@ test_that("Gaussian elastic-net fit validates a numeric outcome", {
       nfolds = 3,
       n_reps = 2
     ),
-    "must be numeric"
+    "finite numeric values"
   )
 })
 

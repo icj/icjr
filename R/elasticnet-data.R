@@ -94,10 +94,6 @@ prepare_elasticnet_data <- function(
 
   outcome_values <- sample_data[[outcome_name]]
 
-  if (!is.numeric(outcome_values)) {
-    rlang::abort("`outcome` must be numeric for Gaussian elastic-net models.")
-  }
-
   covariate_variables <- if (is.null(covariates)) {
     character()
   } else {
@@ -119,7 +115,7 @@ prepare_elasticnet_data <- function(
     )
   }
 
-  complete_outcome <- is.finite(outcome_values)
+  complete_outcome <- !is.na(outcome_values)
 
   complete_covariates <- if (length(covariate_variables) == 0L) {
     rep(TRUE, nrow(sample_data))

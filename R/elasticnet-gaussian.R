@@ -74,6 +74,12 @@ fit_elasticnet_gaussian <- function(
     subset_expression = subset_expression
   )
 
+  if (!is.numeric(model_data$y) || any(!is.finite(model_data$y))) {
+    rlang::abort(
+      "`outcome` must contain only finite numeric values for Gaussian elastic-net models."
+    )
+  }
+
   design <- build_elasticnet_design(
     x = model_data$x,
     covariate_matrix = model_data$covariate_matrix,
