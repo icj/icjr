@@ -98,11 +98,55 @@ prepare_elasticnet_data <- function(
     rlang::abort("`outcome` must be numeric for Gaussian elastic-net models.")
   }
 
+  covariate_variables <- if (is.null(covariates)) {
+    character()
+  } else {
+    all.vars(covariates)
+  }
+
+  missing_covariate_variables <- setdiff(
+    covariate_variables,
+    names(sample_data)
+  )
+
+  if (length(missing_covariate_variables) > 0L) {
+    rlang::abort(
+      paste0(
+        "`covariates` refers to column(s) not found in `sample_data`: ",
+        paste(missing_covariate_variables, collapse = ", "),
+        "."
+      )
+    )
+  }
+
+  complete_outcome <- is.finite(outcome_values)
+
+  complete_covariates <- if (length(covariate_variables) == 0L) {
+    rep(TRUE, nrow(sample_data))
+  } else {
+    stats::complete.cases(
+      sample_data[, covariate_variables, drop = FALSE]
+    )
+  }
+
+  complete_rows <- complete_outcome & complete_covariates
+
+  n_incomplete_outcome_or_covariates <- sum(!complete_rows)
+
+  sample_data <- sample_data[complete_rows, , drop = FALSE]
+
+  if (nrow(sample_data) < 3L) {
+    rlang::abort("Fewer than 3 complete samples remain for modeling.")
+  }
+
   covariate_matrix <- if (is.null(covariates)) {
     NULL
   } else {
     tryCatch(
-      stats::model.matrix(covariates, data = sample_data)[, -1, drop = FALSE],
+      stats::model.matrix(
+        covariates,
+        data = sample_data
+      )[, -1, drop = FALSE],
       error = function(error) {
         rlang::abort(
           paste0(
@@ -112,28 +156,6 @@ prepare_elasticnet_data <- function(
         )
       }
     )
-  }
-
-  complete_outcome <- is.finite(outcome_values)
-
-  complete_covariates <- if (is.null(covariate_matrix)) {
-    rep(TRUE, nrow(sample_data))
-  } else {
-    stats::complete.cases(covariate_matrix)
-  }
-
-  complete_rows <- complete_outcome & complete_covariates
-
-  n_incomplete_outcome_or_covariates <- sum(!complete_rows)
-
-  sample_data <- sample_data[complete_rows, , drop = FALSE]
-
-  if (!is.null(covariate_matrix)) {
-    covariate_matrix <- covariate_matrix[complete_rows, , drop = FALSE]
-  }
-
-  if (nrow(sample_data) < 3L) {
-    rlang::abort("Fewer than 3 complete samples remain for modeling.")
   }
 
   x_model <- x[sample_data[[sample_id_name]], , drop = FALSE]

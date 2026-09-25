@@ -144,3 +144,33 @@ test_that("Gaussian elastic-net fit is reproducible with a fixed seed", {
     fit_two$selected_features
   )
 })
+
+test_that("Gaussian elastic-net fit excludes and records incomplete rows", {
+  data <- simulate_gaussian_data()
+
+  sample_data_missing <- data$sample_data
+
+  sample_data_missing$outcome[1:2] <- NA_real_
+  sample_data_missing$age[3] <- NA_real_
+
+  fit <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = sample_data_missing,
+    sample_id = sample_id,
+    outcome = outcome,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 2,
+    feature_filter = feature_filter_none(),
+    seed = 106
+  )
+
+  expect_equal(
+    fit$sample_summary$n_incomplete_outcome_or_covariates,
+    3
+  )
+  expect_equal(
+    fit$sample_summary$n_samples_modeled,
+    nrow(data$x) - 3
+  )
+})
