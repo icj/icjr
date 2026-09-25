@@ -24,7 +24,8 @@ prepare_elasticnet_data <- function(
   sample_id,
   outcome,
   covariates = NULL,
-  subset_expression = NULL
+  subset_expression = NULL,
+  required_columns = NULL
 ) {
   validate_feature_matrix(x)
 
@@ -52,9 +53,41 @@ prepare_elasticnet_data <- function(
     argument = "outcome"
   )
 
+  if (is.null(required_columns)) {
+    required_columns <- outcome_name
+  }
+
+  if (
+    !is.character(required_columns) ||
+      length(required_columns) < 1L ||
+      anyNA(required_columns) ||
+      any(required_columns == "")
+  ) {
+    rlang::abort(
+      "`required_columns` must be a non-empty character vector of column names."
+    )
+  }
+
+  required_columns <- unique(required_columns)
+
+  missing_required_columns <- setdiff(required_columns, names(sample_data))
+
+  if (length(missing_required_columns) > 0L) {
+    rlang::abort(
+      paste0(
+        "`required_columns` refers to column(s) not found in `sample_data`: ",
+        paste(missing_required_columns, collapse = ", "),
+        "."
+      )
+    )
+  }
+
   n_metadata_input <- nrow(sample_data)
 
-  if (!rlang::quo_is_null(subset_expression)) {
+  if (
+    !is.null(subset_expression) &&
+      !rlang::quo_is_null(subset_expression)
+  ) {
     sample_data <- dplyr::filter(sample_data, !!subset_expression)
   }
 
@@ -92,8 +125,6 @@ prepare_elasticnet_data <- function(
     )
   }
 
-  outcome_values <- sample_data[[outcome_name]]
-
   covariate_variables <- if (is.null(covariates)) {
     character()
   } else {
@@ -115,7 +146,9 @@ prepare_elasticnet_data <- function(
     )
   }
 
-  complete_outcome <- !is.na(outcome_values)
+  complete_required <- stats::complete.cases(
+    sample_data[, required_columns, drop = FALSE]
+  )
 
   complete_covariates <- if (length(covariate_variables) == 0L) {
     rep(TRUE, nrow(sample_data))
@@ -125,7 +158,7 @@ prepare_elasticnet_data <- function(
     )
   }
 
-  complete_rows <- complete_outcome & complete_covariates
+  complete_rows <- complete_required & complete_covariates
 
   n_incomplete_outcome_or_covariates <- sum(!complete_rows)
 
@@ -160,14 +193,7 @@ prepare_elasticnet_data <- function(
 
   modeled_ids <- sample_data[[sample_id_name]]
 
-  matrix_order_ids <- rownames(x)[
-    match(
-      rownames(x),
-      modeled_ids,
-      nomatch = 0L
-    ) >
-      0L
-  ]
+  matrix_order_ids <- rownames(x)[rownames(x) %in% modeled_ids]
 
   metadata_order <- match(
     matrix_order_ids,
@@ -212,6 +238,10 @@ prepare_elasticnet_data <- function(
   list(
     x = x_model,
     y = sample_data[[outcome_name]],
+    required_data = sample_data[,
+      unique(c(sample_id_name, required_columns)),
+      drop = FALSE
+    ],
     covariate_matrix = covariate_matrix,
     sample_summary = tibble::tibble(
       n_metadata_input = n_metadata_input,

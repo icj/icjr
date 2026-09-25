@@ -223,3 +223,63 @@ test_that("Gaussian elastic-net fit is invariant to metadata row order", {
     fit_shuffled$covariate_coefficients
   )
 })
+
+test_that("shared preparation retains required data in matrix order", {
+  data <- simulate_gaussian_data()
+
+  sample_data <- data$sample_data |>
+    dplyr::mutate(
+      auxiliary = seq_len(dplyr::n())
+    )
+
+  sample_data <- sample_data[
+    sample(seq_len(nrow(sample_data))),
+    ,
+    drop = FALSE
+  ]
+
+  prepared <- icjr:::prepare_elasticnet_data(
+    x = data$x,
+    sample_data = sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    required_columns = c("outcome", "auxiliary")
+  )
+
+  expect_identical(
+    rownames(prepared$x),
+    prepared$required_data$sample_id
+  )
+
+  expect_identical(
+    prepared$required_data$outcome,
+    prepared$y
+  )
+})
+
+test_that("shared preparation removes rows missing any required column", {
+  data <- simulate_gaussian_data()
+
+  sample_data <- data$sample_data
+  sample_data$outcome[1] <- NA_real_
+  sample_data$auxiliary <- seq_len(nrow(sample_data))
+  sample_data$auxiliary[2] <- NA_integer_
+
+  prepared <- icjr:::prepare_elasticnet_data(
+    x = data$x,
+    sample_data = sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    required_columns = c("outcome", "auxiliary")
+  )
+
+  expect_equal(
+    prepared$sample_summary$n_incomplete_outcome_or_covariates,
+    2
+  )
+
+  expect_equal(
+    prepared$sample_summary$n_samples_modeled,
+    nrow(data$x) - 2
+  )
+})
