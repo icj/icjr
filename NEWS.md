@@ -7,5 +7,6 @@
   deviance-based cross-validation, and odds-ratio feature summaries.
 - Added repeated Cox elastic-net modeling with time-to-event validation,
   event-aware cross-validation, and hazard-ratio feature summaries.
+- Added user-facing extractors for elastic-net fit objects.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.
