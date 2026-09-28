@@ -9,6 +9,7 @@
   event-aware cross-validation, and hazard-ratio feature summaries.
 - Added user-facing extractors for elastic-net fit objects.
 - Added summary methods for elastic-net fit objects.
+- Added stability and effect-magnitude plotting helpers for elastic-net fits.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.
   

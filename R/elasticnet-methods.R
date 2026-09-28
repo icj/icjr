@@ -193,3 +193,17 @@ print.summary.icjr_elasticnet_fit <- function(x, ...) {
 
   invisible(x)
 }
+
+#' Plot an elastic-net fit
+#'
+#' Creates a feature-selection stability plot. For an effect-magnitude view,
+#' use [plot_elasticnet_effects()].
+#'
+#' @param x An `icjr_elasticnet_fit` object.
+#' @param ... Arguments passed to [plot_elasticnet_stability()].
+#'
+#' @return A `ggplot` object.
+#' @export
+plot.icjr_elasticnet_fit <- function(x, ...) {
+  plot_elasticnet_stability(x, ...)
+}
