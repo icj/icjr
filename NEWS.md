@@ -10,6 +10,7 @@
 - Added user-facing extractors for elastic-net fit objects.
 - Added summary methods for elastic-net fit objects.
 - Added stability and effect-magnitude plotting helpers for elastic-net fits.
+- Added helpers for classifying elastic-net features by selection frequency and effect magnitude.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.
   

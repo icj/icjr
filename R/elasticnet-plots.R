@@ -1,6 +1,7 @@
 #' @importFrom rlang .data
 NULL
 
+
 prepare_elasticnet_plot_data <- function(
   x,
   n_features,
@@ -44,8 +45,10 @@ prepare_elasticnet_plot_data <- function(
 
   if (nrow(features) == 0L) {
     rlang::abort(
-      "No selected features meet `min_percent`; lower the threshold or inspect ",
-      "`selected_features(x)`."
+      paste0(
+        "No selected features meet `min_percent`; lower the threshold or inspect ",
+        "`selected_features(x)`."
+      )
     )
   }
 
@@ -91,6 +94,7 @@ prepare_elasticnet_plot_data <- function(
   features
 }
 
+
 validate_elasticnet_plot_labels <- function(
   title,
   subtitle,
@@ -128,6 +132,7 @@ validate_elasticnet_plot_labels <- function(
   invisible(NULL)
 }
 
+
 elasticnet_effect_label <- function(x) {
   switch(
     x$specification$family,
@@ -137,6 +142,59 @@ elasticnet_effect_label <- function(x) {
     "Median coefficient"
   )
 }
+
+
+add_elasticnet_plot_labels <- function(
+  features,
+  label_signal,
+  frequency_cutoffs,
+  effect_cutoffs
+) {
+  features <- classify_elasticnet_features(
+    features = features,
+    frequency_cutoffs = frequency_cutoffs,
+    effect_cutoffs = effect_cutoffs
+  )
+
+  if (is.null(label_signal)) {
+    features$point_label <- NA_character_
+    return(features)
+  }
+
+  if (
+    !is.character(label_signal) ||
+      anyNA(label_signal) ||
+      any(label_signal == "")
+  ) {
+    rlang::abort(
+      "`label_signal` must be `NULL` or a non-missing character vector."
+    )
+  }
+
+  available_signal <- levels(features$signal_class)
+  unknown_signal <- setdiff(label_signal, available_signal)
+
+  if (length(unknown_signal) > 0L) {
+    rlang::abort(
+      paste0(
+        "`label_signal` contains unknown signal class(es): ",
+        paste(unknown_signal, collapse = ", "),
+        ". Available classes are: ",
+        paste(available_signal, collapse = ", "),
+        "."
+      )
+    )
+  }
+
+  features$point_label <- ifelse(
+    as.character(features$signal_class) %in% label_signal,
+    as.character(features$plot_label),
+    NA_character_
+  )
+
+  features
+}
+
 
 #' Plot elastic-net feature selection stability
 #'
@@ -151,6 +209,15 @@ elasticnet_effect_label <- function(x) {
 #' @param stability_threshold Optional selection-frequency reference line.
 #'   Set to `NULL` to omit the line.
 #' @param labels Use human-readable feature labels when available.
+#' @param label_signal Optional character vector of `signal_class` values to
+#'   label. For example, `c("High:Strong", "Medium:Strong")`. Use `NULL` to
+#'   draw no feature labels.
+#' @param frequency_cutoffs Named numeric vector of inclusive lower bounds for
+#'   selection-frequency categories used to classify and optionally label
+#'   features.
+#' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
+#'   absolute median-coefficient categories used to classify and optionally
+#'   label features.
 #' @param title Plot title.
 #' @param subtitle Plot subtitle. If `NULL`, a subtitle describing the number
 #'   of displayed features is used.
@@ -159,7 +226,8 @@ elasticnet_effect_label <- function(x) {
 #' @param x_label X-axis label.
 #' @param y_label Y-axis label.
 #'
-#' @return A `ggplot` object.
+#' @return A `ggplot` object. Its `data` element contains the plotted features
+#'   plus `frequency_class`, `effect_class`, `signal_class`, and `point_label`.
 #' @export
 plot_elasticnet_stability <- function(
   x,
@@ -167,6 +235,19 @@ plot_elasticnet_stability <- function(
   min_percent = 0,
   stability_threshold = 50,
   labels = TRUE,
+  label_signal = NULL,
+  frequency_cutoffs = c(
+    Rare = 0,
+    Low = 20,
+    Medium = 50,
+    High = 80
+  ),
+  effect_cutoffs = c(
+    Negligible = 0,
+    Weak = 0.05,
+    Moderate = 0.10,
+    Strong = 0.30
+  ),
   title = "Elastic-net feature selection stability",
   subtitle = NULL,
   caption = NULL,
@@ -203,6 +284,13 @@ plot_elasticnet_stability <- function(
     labels = labels
   )
 
+  features <- add_elasticnet_plot_labels(
+    features = features,
+    label_signal = label_signal,
+    frequency_cutoffs = frequency_cutoffs,
+    effect_cutoffs = effect_cutoffs
+  )
+
   features$plot_label <- stats::reorder(
     features$plot_label,
     features$percent
@@ -228,6 +316,20 @@ plot_elasticnet_stability <- function(
     )
   }
 
+  label_layer <- if (all(is.na(features$point_label))) {
+    NULL
+  } else {
+    ggplot2::geom_text(
+      data = features[!is.na(features$point_label), , drop = FALSE],
+      ggplot2::aes(
+        label = .data$point_label
+      ),
+      hjust = -0.1,
+      show.legend = FALSE,
+      inherit.aes = TRUE
+    )
+  }
+
   plot <- ggplot2::ggplot(
     features,
     ggplot2::aes(
@@ -250,6 +352,7 @@ plot_elasticnet_stability <- function(
     ) +
     threshold_layer +
     ggplot2::geom_point() +
+    label_layer +
     ggplot2::scale_color_manual(
       values = c(
         "Positive" = "#2C7FB8",
@@ -264,8 +367,9 @@ plot_elasticnet_stability <- function(
     ) +
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
-      expand = ggplot2::expansion(mult = c(0, 0.05))
+      expand = ggplot2::expansion(mult = c(0, 0.15))
     ) +
+    ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(
       title = title,
       subtitle = subtitle,
@@ -279,7 +383,8 @@ plot_elasticnet_stability <- function(
       panel.grid.major.y = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "bottom",
-      legend.box = "vertical"
+      legend.box = "vertical",
+      plot.margin = ggplot2::margin(r = 35)
     ) +
     ggplot2::guides(
       color = ggplot2::guide_legend(
@@ -292,6 +397,7 @@ plot_elasticnet_stability <- function(
   plot
 }
 
+
 #' Plot elastic-net feature effect magnitudes
 #'
 #' Plots absolute median penalized coefficient magnitude for the most stable
@@ -303,6 +409,15 @@ plot_elasticnet_stability <- function(
 #'   `Inf` to display all eligible features.
 #' @param min_percent Minimum selection frequency required for display.
 #' @param labels Use human-readable feature labels when available.
+#' @param label_signal Optional character vector of `signal_class` values to
+#'   label. For example, `c("High:Strong", "Medium:Strong")`. Use `NULL` to
+#'   draw no feature labels.
+#' @param frequency_cutoffs Named numeric vector of inclusive lower bounds for
+#'   selection-frequency categories used to classify and optionally label
+#'   features.
+#' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
+#'   absolute median-coefficient categories used to classify and optionally
+#'   label features.
 #' @param title Plot title.
 #' @param subtitle Plot subtitle. If `NULL`, a subtitle describing the number
 #'   of displayed features is used.
@@ -312,13 +427,27 @@ plot_elasticnet_stability <- function(
 #'   label is used.
 #' @param y_label Y-axis label.
 #'
-#' @return A `ggplot` object.
+#' @return A `ggplot` object. Its `data` element contains the plotted features
+#'   plus `frequency_class`, `effect_class`, `signal_class`, and `point_label`.
 #' @export
 plot_elasticnet_effects <- function(
   x,
   n_features = 20,
   min_percent = 0,
   labels = TRUE,
+  label_signal = NULL,
+  frequency_cutoffs = c(
+    Rare = 0,
+    Low = 20,
+    Medium = 50,
+    High = 80
+  ),
+  effect_cutoffs = c(
+    Negligible = 0,
+    Weak = 0.05,
+    Moderate = 0.10,
+    Strong = 0.30
+  ),
   title = "Elastic-net feature effect magnitudes",
   subtitle = NULL,
   caption = NULL,
@@ -340,6 +469,13 @@ plot_elasticnet_effects <- function(
     n_features = n_features,
     min_percent = min_percent,
     labels = labels
+  )
+
+  features <- add_elasticnet_plot_labels(
+    features = features,
+    label_signal = label_signal,
+    frequency_cutoffs = frequency_cutoffs,
+    effect_cutoffs = effect_cutoffs
   )
 
   features <- features[
@@ -371,6 +507,20 @@ plot_elasticnet_effects <- function(
     x_label <- paste0("Absolute ", tolower(effect_label))
   }
 
+  label_layer <- if (all(is.na(features$point_label))) {
+    NULL
+  } else {
+    ggplot2::geom_text(
+      data = features[!is.na(features$point_label), , drop = FALSE],
+      ggplot2::aes(
+        label = .data$point_label
+      ),
+      hjust = -0.1,
+      show.legend = FALSE,
+      inherit.aes = TRUE
+    )
+  }
+
   plot <- ggplot2::ggplot(
     features,
     ggplot2::aes(
@@ -392,6 +542,7 @@ plot_elasticnet_effects <- function(
       inherit.aes = FALSE
     ) +
     ggplot2::geom_point() +
+    label_layer +
     ggplot2::scale_color_manual(
       values = c(
         "Positive" = "#2C7FB8",
@@ -405,8 +556,9 @@ plot_elasticnet_effects <- function(
       range = c(2.5, 7)
     ) +
     ggplot2::scale_x_continuous(
-      expand = ggplot2::expansion(mult = c(0, 0.05))
+      expand = ggplot2::expansion(mult = c(0, 0.15))
     ) +
+    ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(
       title = title,
       subtitle = subtitle,
@@ -420,7 +572,8 @@ plot_elasticnet_effects <- function(
       panel.grid.major.y = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "bottom",
-      legend.box = "vertical"
+      legend.box = "vertical",
+      plot.margin = ggplot2::margin(r = 35)
     ) +
     ggplot2::guides(
       color = ggplot2::guide_legend(

@@ -9,6 +9,9 @@ plot_elasticnet_effects(
   n_features = 20,
   min_percent = 0,
   labels = TRUE,
+  label_signal = NULL,
+  frequency_cutoffs = c(Rare = 0, Low = 20, Medium = 50, High = 80),
+  effect_cutoffs = c(Negligible = 0, Weak = 0.05, Moderate = 0.1, Strong = 0.3),
   title = "Elastic-net feature effect magnitudes",
   subtitle = NULL,
   caption = NULL,
@@ -27,6 +30,18 @@ plot_elasticnet_effects(
 
 \item{labels}{Use human-readable feature labels when available.}
 
+\item{label_signal}{Optional character vector of \code{signal_class} values to
+label. For example, \code{c("High:Strong", "Medium:Strong")}. Use \code{NULL} to
+draw no feature labels.}
+
+\item{frequency_cutoffs}{Named numeric vector of inclusive lower bounds for
+selection-frequency categories used to classify and optionally label
+features.}
+
+\item{effect_cutoffs}{Named numeric vector of inclusive lower bounds for
+absolute median-coefficient categories used to classify and optionally
+label features.}
+
 \item{title}{Plot title.}
 
 \item{subtitle}{Plot subtitle. If \code{NULL}, a subtitle describing the number
@@ -42,7 +57,8 @@ label is used.}
 \item{y_label}{Y-axis label.}
 }
 \value{
-A \code{ggplot} object.
+A \code{ggplot} object. Its \code{data} element contains the plotted features
+plus \code{frequency_class}, \code{effect_class}, \code{signal_class}, and \code{point_label}.
 }
 \description{
 Plots absolute median penalized coefficient magnitude for the most stable

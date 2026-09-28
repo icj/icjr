@@ -354,3 +354,114 @@ test_that("elastic-net effects plot uses family-specific x-axis labels", {
     "Absolute median log hazard ratio"
   )
 })
+
+test_that("elastic-net stability plot classifies plotted features", {
+  data <- simulate_gaussian_data()
+
+  fit <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    nfolds = 3,
+    n_reps = 3,
+    feature_filter = feature_filter_none(),
+    seed = 801
+  )
+
+  plot <- plot_elasticnet_stability(fit, n_features = 10)
+
+  expect_true(
+    all(
+      c(
+        "frequency_class",
+        "effect_class",
+        "signal_class",
+        "point_label"
+      ) %in%
+        names(plot$data)
+    )
+  )
+
+  expect_true(all(is.na(plot$data$point_label)))
+})
+
+test_that("elastic-net effects plot labels requested signal classes", {
+  data <- simulate_gaussian_data()
+
+  fit <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    nfolds = 3,
+    n_reps = 5,
+    feature_filter = feature_filter_none(),
+    seed = 802
+  )
+
+  unlabelled_plot <- plot_elasticnet_effects(
+    fit,
+    n_features = Inf
+  )
+
+  available_signal <- as.character(
+    unlabelled_plot$data$signal_class[[1L]]
+  )
+
+  labelled_plot <- plot_elasticnet_effects(
+    fit,
+    n_features = Inf,
+    label_signal = available_signal
+  )
+
+  labeled <- labelled_plot$data[
+    !is.na(labelled_plot$data$point_label),
+    ,
+    drop = FALSE
+  ]
+
+  expect_true(nrow(labeled) > 0L)
+
+  expect_true(
+    all(
+      as.character(labeled$signal_class) == available_signal
+    )
+  )
+
+  expect_identical(
+    labeled$point_label,
+    as.character(labeled$plot_label)
+  )
+})
+
+test_that("elastic-net plots validate requested signal classes", {
+  data <- simulate_gaussian_data()
+
+  fit <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    nfolds = 3,
+    n_reps = 2,
+    feature_filter = feature_filter_none(),
+    seed = 803
+  )
+
+  expect_error(
+    plot_elasticnet_stability(
+      fit,
+      label_signal = "Not_a_real_class"
+    ),
+    "unknown signal class"
+  )
+
+  expect_error(
+    plot_elasticnet_effects(
+      fit,
+      label_signal = 1
+    ),
+    "must be `NULL` or a non-missing character vector"
+  )
+})
