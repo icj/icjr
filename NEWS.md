@@ -11,6 +11,10 @@
 - Added summary methods for elastic-net fit objects.
 - Added stability and effect-magnitude plotting helpers for elastic-net fits.
 - Added helpers for classifying elastic-net features by selection frequency and effect magnitude.
+- Added `notable_features()` to create compact reporting tables of features
+  meeting selection-frequency and effect-magnitude thresholds. Output includes
+  median, minimum, and maximum penalized coefficients across selected repeated
+  fits.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.
   

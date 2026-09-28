@@ -171,6 +171,10 @@ Important columns include:
   feature.
 - `median_coefficient`: median nonzero penalized coefficient across
   repeated fits in which the feature was selected.
+- `min_coefficient`: smallest nonzero penalized coefficient across
+  repeated fits that selected the feature.
+- `max_coefficient`: largest nonzero penalized coefficient across
+  repeated fits that selected the feature.
 - `median_effect`: a family-specific effect-scale summary.
 - `sign_consistency`: consistency of coefficient direction across
   selected fits.
@@ -242,6 +246,50 @@ classify_elasticnet_features(
   )
 )
 ```
+
+### Create a reporting table
+
+`notable_features()` returns a compact reporting table for features
+meeting explicit selection-frequency and effect-magnitude thresholds.
+
+``` r
+notable <- notable_features(
+  fit,
+  min_percent = 50,
+  min_abs_coefficient = 0.10
+)
+
+notable
+```
+
+By default, the returned table includes:
+
+- `feature` and, when available, `feature_label`.
+- `percent`, the selection frequency across successful repeated fits.
+- `median_coefficient`, the central penalized coefficient among fits
+  selecting the feature.
+- `min_coefficient` and `max_coefficient`, the observed range of nonzero
+  penalized coefficients among fits selecting the feature.
+- `median_effect` and `median_effect_label`, family-specific
+  effect-scale summaries.
+- `sign_consistency`, plus frequency, effect, and combined signal
+  classes.
+
+Use smaller thresholds for an inclusive exploratory table, or use
+`n_features` to limit the number of rows:
+
+``` r
+notable_features(
+  fit,
+  min_percent = 25,
+  min_abs_coefficient = 0.05,
+  n_features = 20
+)
+```
+
+`min_coefficient` and `max_coefficient` describe variation across the
+repeated fits that selected a feature. They are not confidence limits or
+post-selection inference intervals.
 
 ### Plot selection stability
 
@@ -380,11 +428,17 @@ cox_fit <- fit_elasticnet_cox(
 )
 ```
 
-The same extractors, classifier, and plotting functions work across
-Gaussian, binomial, and Cox elastic-net fits:
+The same extractors, reporting helper, classifier, and plotting
+functions work across Gaussian, binomial, and Cox elastic-net fits:
 
 ``` r
 summary(cox_fit)
+
+notable_features(
+  cox_fit,
+  min_percent = 50,
+  min_abs_coefficient = 0.10
+)
 
 selected_features(cox_fit) |>
   classify_elasticnet_features()
@@ -437,16 +491,21 @@ questions:
 - A large absolute median coefficient suggests a stronger penalized
   association on the model’s coefficient scale among fits that selected
   that feature.
+- A wide range from `min_coefficient` to `max_coefficient` indicates
+  that the estimated penalized magnitude varied across repeated fits
+  that selected the feature. If that range crosses zero, the feature
+  also has inconsistent coefficient direction.
 - A feature with a large coefficient but low selection frequency may be
   unstable.
 - A feature with a high selection frequency but modest coefficient may
   be a reproducible, small association.
 
-These summaries are exploratory model-selection outputs. They do not by
-themselves provide valid post-selection p-values, confidence intervals,
-or causal-effect estimates. Use independent validation, resampling,
-appropriate inference methods, and domain knowledge before treating
-selected features as confirmed findings.
+These summaries and reporting tables are exploratory model-selection
+outputs. They do not by themselves provide valid post-selection
+p-values, confidence intervals, or causal-effect estimates. Use
+independent validation, resampling, appropriate inference methods, and
+domain knowledge before treating selected features as confirmed
+findings.
 
 ## Development
 
