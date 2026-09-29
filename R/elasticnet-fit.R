@@ -63,6 +63,24 @@ validate_elasticnet_settings <- function(
 }
 
 #' @noRd
+validate_workers <- function(workers) {
+  if (
+    length(workers) != 1L ||
+      !is.numeric(workers) ||
+      is.na(workers) ||
+      !is.finite(workers) ||
+      workers < 1L ||
+      workers != as.integer(workers)
+  ) {
+    rlang::abort(
+      "`workers` must be one whole number greater than or equal to 1."
+    )
+  }
+
+  as.integer(workers)
+}
+
+#' @noRd
 build_elasticnet_design <- function(x, covariate_matrix, feature_filter) {
   feature_names <- select_model_features(
     x = x,
