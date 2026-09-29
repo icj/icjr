@@ -61,8 +61,9 @@ requested folds.}
 \item{seed}{Optional integer seed. Repetition \code{i} uses \code{seed + i - 1}.}
 
 \item{workers}{Number of worker processes used for repeated model fitting.
-\code{1} runs sequentially. Values greater than \code{1} will enable parallel
-execution in a future update.}
+\code{1} runs sequentially; values greater than \code{1} run repetitions in
+parallel using a multisession future plan. With the same inputs and
+\code{seed}, analytical results are invariant to \code{workers}.}
 
 \item{annotation}{Optional data frame with \code{feature} and \code{feature_label}
 columns.}

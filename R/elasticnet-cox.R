@@ -53,8 +53,9 @@ prepare_cox_status <- function(status) {
 #'   `feature_filter_*()` function.
 #' @param seed Optional integer seed. Repetition `i` uses `seed + i - 1`.
 #' @param workers Number of worker processes used for repeated model fitting.
-#'   `1` runs sequentially. Values greater than `1` will enable parallel
-#'   execution in a future update.
+#'   `1` runs sequentially; values greater than `1` run repetitions in
+#'   parallel using a multisession future plan. With the same inputs and
+#'   `seed`, analytical results are invariant to `workers`.
 #' @param annotation Optional data frame with `feature` and `feature_label`
 #'   columns.
 #' @param keep_models Logical; retain successful `cv.glmnet` objects in the
