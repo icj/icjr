@@ -52,6 +52,9 @@ prepare_cox_status <- function(status) {
 #' @param feature_filter An `icjr_feature_filter` object created by a
 #'   `feature_filter_*()` function.
 #' @param seed Optional integer seed. Repetition `i` uses `seed + i - 1`.
+#' @param workers Number of worker processes used for repeated model fitting.
+#'   `1` runs sequentially. Values greater than `1` will enable parallel
+#'   execution in a future update.
 #' @param annotation Optional data frame with `feature` and `feature_label`
 #'   columns.
 #' @param keep_models Logical; retain successful `cv.glmnet` objects in the
@@ -75,6 +78,7 @@ fit_elasticnet_cox <- function(
   lambda = c("lambda.1se", "lambda.min"),
   feature_filter = feature_filter_mad(0.5),
   seed = NULL,
+  workers = 1L,
   annotation = NULL,
   keep_models = FALSE
 ) {
@@ -173,7 +177,8 @@ fit_elasticnet_cox <- function(
     n_reps = n_reps,
     penalty_factor = design$penalty_factor,
     type_measure = "C",
-    seed = seed
+    seed = seed,
+    workers = workers
   )
 
   n_models_successful <- nrow(
