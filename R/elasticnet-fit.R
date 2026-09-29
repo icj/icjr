@@ -169,7 +169,30 @@ fit_repeated_cv_glmnet <- function(
     )
   }
 
-  models <- lapply(seq_len(n_reps), fit_one)
+  previous_plan <- future::plan()
+
+  on.exit(
+    future::plan(previous_plan),
+    add = TRUE
+  )
+
+  if (workers == 1L) {
+    future::plan(future::sequential)
+  } else {
+    future::plan(
+      future::multisession,
+      workers = workers
+    )
+  }
+  models <- furrr::future_map(
+    seq_len(n_reps),
+    fit_one,
+    .options = furrr::furrr_options(
+      seed = seed,
+      scheduling = 1
+    ),
+    .progress = FALSE
+  )
 
   successful <- !vapply(
     models,
