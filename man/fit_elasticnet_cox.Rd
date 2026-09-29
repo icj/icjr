@@ -18,6 +18,7 @@ fit_elasticnet_cox(
   lambda = c("lambda.1se", "lambda.min"),
   feature_filter = feature_filter_mad(0.5),
   seed = NULL,
+  workers = 1L,
   annotation = NULL,
   keep_models = FALSE
 )
@@ -58,6 +59,11 @@ requested folds.}
 \verb{feature_filter_*()} function.}
 
 \item{seed}{Optional integer seed. Repetition \code{i} uses \code{seed + i - 1}.}
+
+\item{workers}{Number of worker processes used for repeated model fitting.
+\code{1} runs sequentially; values greater than \code{1} run repetitions in
+parallel using a multisession future plan. With the same inputs and
+\code{seed}, analytical results are invariant to \code{workers}.}
 
 \item{annotation}{Optional data frame with \code{feature} and \code{feature_label}
 columns.}

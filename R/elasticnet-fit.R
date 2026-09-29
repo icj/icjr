@@ -63,6 +63,24 @@ validate_elasticnet_settings <- function(
 }
 
 #' @noRd
+validate_workers <- function(workers) {
+  if (
+    length(workers) != 1L ||
+      !is.numeric(workers) ||
+      is.na(workers) ||
+      !is.finite(workers) ||
+      workers < 1L ||
+      workers != as.integer(workers)
+  ) {
+    rlang::abort(
+      "`workers` must be one whole number greater than or equal to 1."
+    )
+  }
+
+  as.integer(workers)
+}
+
+#' @noRd
 build_elasticnet_design <- function(x, covariate_matrix, feature_filter) {
   feature_names <- select_model_features(
     x = x,
@@ -109,13 +127,16 @@ fit_repeated_cv_glmnet <- function(
   n_reps,
   penalty_factor,
   type_measure,
-  seed
+  seed,
+  workers = 1L
 ) {
   nfolds_used <- min(as.integer(nfolds), nrow(x))
 
   if (nfolds_used < 2L) {
     rlang::abort("At least 2 samples are required for cross-validation.")
   }
+
+  workers <- validate_workers(workers)
 
   fit_one <- function(repetition) {
     if (!is.null(seed)) {
@@ -148,7 +169,30 @@ fit_repeated_cv_glmnet <- function(
     )
   }
 
-  models <- lapply(seq_len(n_reps), fit_one)
+  previous_plan <- future::plan()
+
+  on.exit(
+    future::plan(previous_plan),
+    add = TRUE
+  )
+
+  if (workers == 1L) {
+    future::plan(future::sequential)
+  } else {
+    future::plan(
+      future::multisession,
+      workers = workers
+    )
+  }
+  models <- furrr::future_map(
+    seq_len(n_reps),
+    fit_one,
+    .options = furrr::furrr_options(
+      seed = seed,
+      scheduling = 1
+    ),
+    .progress = FALSE
+  )
 
   successful <- !vapply(
     models,

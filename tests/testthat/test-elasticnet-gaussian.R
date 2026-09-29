@@ -283,3 +283,50 @@ test_that("shared preparation removes rows missing any required column", {
     nrow(data$x) - 2
   )
 })
+
+test_that("Gaussian elastic-net results are invariant to worker count", {
+  data <- simulate_gaussian_data()
+
+  old_plan <- future::plan()
+
+  on.exit(
+    future::plan(old_plan),
+    add = TRUE
+  )
+
+  fit_sequential <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 3,
+    feature_filter = feature_filter_none(),
+    seed = 106,
+    workers = 1L
+  )
+
+  fit_parallel <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id,
+    outcome = outcome,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 3,
+    feature_filter = feature_filter_none(),
+    seed = 106,
+    workers = 2L
+  )
+
+  expect_identical(
+    fit_sequential$selected_features,
+    fit_parallel$selected_features
+  )
+
+  expect_identical(
+    fit_sequential$covariate_coefficients,
+    fit_parallel$covariate_coefficients
+  )
+})
