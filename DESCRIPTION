@@ -23,6 +23,8 @@ Depends:
 Imports: 
     dplyr,
     ggplot2,
+    future,
+    furrr,
     glmnet,
     rlang,
     survival,
