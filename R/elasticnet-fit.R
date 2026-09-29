@@ -127,13 +127,16 @@ fit_repeated_cv_glmnet <- function(
   n_reps,
   penalty_factor,
   type_measure,
-  seed
+  seed,
+  workers = 1L
 ) {
   nfolds_used <- min(as.integer(nfolds), nrow(x))
 
   if (nfolds_used < 2L) {
     rlang::abort("At least 2 samples are required for cross-validation.")
   }
+
+  workers <- validate_workers(workers)
 
   fit_one <- function(repetition) {
     if (!is.null(seed)) {
