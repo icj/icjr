@@ -233,3 +233,31 @@ test_that("Cox elastic-net results are invariant to worker count", {
     fit_parallel$covariate_coefficients
   )
 })
+
+test_that("Cox elastic-net fit accepts variables holding column names", {
+  data <- simulate_cox_data()
+
+  sample_id_col <- "sample_id"
+  time_col <- "followup_time"
+  status_col <- "event_status"
+
+  fit <- fit_elasticnet_cox(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id_col,
+    time = time_col,
+    status = status_col,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 2,
+    feature_filter = feature_filter_none(),
+    seed = 413
+  )
+
+  expect_s3_class(fit, "icjr_elasticnet_fit")
+  expect_identical(fit$specification$family, "cox")
+  expect_equal(
+    fit$sample_summary$n_events,
+    sum(data$sample_data$event_status == 1L)
+  )
+})

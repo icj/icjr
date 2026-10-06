@@ -101,19 +101,19 @@ fit_elasticnet_cox <- function(
 
   sample_id_name <- resolve_column_name(
     data = sample_data,
-    column = {{ sample_id }},
+    column = rlang::enquo(sample_id),
     argument = "sample_id"
   )
 
   time_name <- resolve_column_name(
     data = sample_data,
-    column = {{ time }},
+    column = rlang::enquo(time),
     argument = "time"
   )
 
   status_name <- resolve_column_name(
     data = sample_data,
-    column = {{ status }},
+    column = rlang::enquo(status),
     argument = "status"
   )
 

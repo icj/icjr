@@ -15,10 +15,12 @@
   meeting selection-frequency and effect-magnitude thresholds. Output includes
   median, minimum, and maximum penalized coefficients across selected repeated
   fits.
-  - Added optional parallel repeated fitting via `workers` to
+- Added optional parallel repeated fitting via `workers` to
   `fit_elasticnet_gaussian()`, `fit_elasticnet_binomial()`, and
   `fit_elasticnet_cox()`. Results are reproducible and invariant to
   `workers` when inputs and `seed` are unchanged.
 - Improved elastic-net input handling for missing metadata and sample-ID
   alignment.
-  
+- Improved elastic-net column argument handling: `sample_id`, outcomes, and
+  Cox `time` and `status` arguments can now be supplied through variables
+  containing column names.

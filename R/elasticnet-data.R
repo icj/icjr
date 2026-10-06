@@ -1,11 +1,33 @@
 #' @noRd
 resolve_column_name <- function(data, column, argument) {
-  column_expression <- rlang::enexpr(column)
+  column_expression <- rlang::get_expr(column)
+  column_environment <- rlang::get_env(column)
 
-  column_name <- if (is.character(column_expression)) {
-    rlang::as_string(column_expression)
+  if (is.character(column_expression)) {
+    column_name <- rlang::as_string(column_expression)
+  } else if (rlang::is_symbol(column_expression)) {
+    symbol_name <- rlang::as_name(column_expression)
+
+    column_name <- if (symbol_name %in% names(data)) {
+      symbol_name
+    } else {
+      value <- rlang::eval_tidy(
+        column_expression,
+        env = column_environment
+      )
+
+      if (
+        is.character(value) &&
+          length(value) == 1L &&
+          !is.na(value)
+      ) {
+        value
+      } else {
+        symbol_name
+      }
+    }
   } else {
-    rlang::as_name(column_expression)
+    column_name <- NA_character_
   }
 
   if (length(column_name) != 1L || !column_name %in% names(data)) {
@@ -43,13 +65,13 @@ prepare_elasticnet_data <- function(
 
   sample_id_name <- resolve_column_name(
     data = sample_data,
-    column = {{ sample_id }},
+    column = rlang::enquo(sample_id),
     argument = "sample_id"
   )
 
   outcome_name <- resolve_column_name(
     data = sample_data,
-    column = {{ outcome }},
+    column = rlang::enquo(outcome),
     argument = "outcome"
   )
 
