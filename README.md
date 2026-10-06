@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file. -->
 
-# icjr
+# icjr <img src="man/figures/icjr-hex.png" align="right" height="139" alt="icjr hex sticker" />
 
 `icjr` is a personal R helper package for analysis workflows, with
 functions that are useful enough to keep reusing across projects. It
