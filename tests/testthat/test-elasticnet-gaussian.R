@@ -330,3 +330,25 @@ test_that("Gaussian elastic-net results are invariant to worker count", {
     fit_parallel$covariate_coefficients
   )
 })
+
+test_that("Gaussian elastic-net fit accepts variables holding column names", {
+  data <- simulate_gaussian_data()
+
+  sample_id_col <- "sample_id"
+  outcome_col <- "outcome"
+
+  fit <- fit_elasticnet_gaussian(
+    x = data$x,
+    sample_data = data$sample_data,
+    sample_id = sample_id_col,
+    outcome = outcome_col,
+    covariates = ~ age + sex,
+    nfolds = 3,
+    n_reps = 2,
+    feature_filter = feature_filter_none(),
+    seed = 411
+  )
+
+  expect_s3_class(fit, "icjr_elasticnet_fit")
+  expect_identical(fit$specification$family, "gaussian")
+})
