@@ -11,9 +11,12 @@ resolve_column_name <- function(data, column, argument) {
     column_name <- if (symbol_name %in% names(data)) {
       symbol_name
     } else {
-      value <- rlang::eval_tidy(
-        column_expression,
-        env = column_environment
+      value <- tryCatch(
+        rlang::eval_tidy(
+          column_expression,
+          env = column_environment
+        ),
+        error = function(condition) NULL
       )
 
       if (
