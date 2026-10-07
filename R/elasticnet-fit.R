@@ -326,7 +326,7 @@ summarize_selected_features <- function(
 
     summary <- summary |>
       dplyr::left_join(annotation, by = "feature") |>
-      dplyr::relocate(.data$feature_label, .after = .data$feature)
+      dplyr::relocate("feature_label", .after = "feature")
   }
 
   summary |>
