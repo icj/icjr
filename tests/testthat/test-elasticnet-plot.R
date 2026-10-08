@@ -341,17 +341,17 @@ test_that("elastic-net effects plot uses family-specific x-axis labels", {
 
   expect_identical(
     plot_elasticnet_effects(gaussian_fit)$labels$x,
-    "Absolute median coefficient"
+    "Absolute standardized coefficient (per 1-SD increase)"
   )
 
   expect_identical(
     plot_elasticnet_effects(binomial_fit)$labels$x,
-    "Absolute median log odds ratio"
+    "Absolute standardized log odds ratio (per 1-SD increase)"
   )
 
   expect_identical(
     plot_elasticnet_effects(cox_fit)$labels$x,
-    "Absolute median log hazard ratio"
+    "Absolute standardized log hazard ratio (per 1-SD increase)"
   )
 })
 

@@ -16,7 +16,7 @@ test_that("notable_features returns a compact classified table", {
   result <- notable_features(
     fit,
     min_percent = 0,
-    min_abs_coefficient = 0
+    min_abs_standardized_coefficient = 0
   )
 
   expect_true(is.data.frame(result))
@@ -58,7 +58,7 @@ test_that("notable_features applies thresholds and limits output", {
   result <- notable_features(
     fit,
     min_percent = 20,
-    min_abs_coefficient = 0.01,
+    min_abs_standardized_coefficient = 0.01,
     n_features = 2
   )
 
@@ -84,7 +84,7 @@ test_that("notable_features orders features by stability and magnitude", {
   result <- notable_features(
     fit,
     min_percent = 0,
-    min_abs_coefficient = 0
+    min_abs_standardized_coefficient = 0
   )
 
   expected <- result[
@@ -117,7 +117,7 @@ test_that("notable_features supports custom classification cutoffs", {
   result <- notable_features(
     fit,
     min_percent = 0,
-    min_abs_coefficient = 0,
+    min_abs_standardized_coefficient = 0,
     frequency_cutoffs = c(
       Infrequent = 0,
       Frequent = 50
@@ -160,7 +160,7 @@ test_that("notable_features returns no rows when nothing meets thresholds", {
   result <- notable_features(
     fit,
     min_percent = 100,
-    min_abs_coefficient = 100
+    min_abs_standardized_coefficient = 100
   )
 
   expect_equal(nrow(result), 0)
@@ -202,7 +202,7 @@ test_that("notable_features validates arguments", {
   )
 
   expect_error(
-    notable_features(fit, min_abs_coefficient = -0.01),
+    notable_features(fit, min_abs_standardized_coefficient = -0.01),
     "greater than or equal to 0"
   )
 
@@ -265,7 +265,7 @@ test_that("notable_features works for all elastic-net families", {
       notable_features(
         fit,
         min_percent = 0,
-        min_abs_coefficient = 0
+        min_abs_standardized_coefficient = 0
       )
     }
   )
@@ -293,7 +293,7 @@ test_that("notable_features includes coefficient range summaries", {
   result <- notable_features(
     fit,
     min_percent = 0,
-    min_abs_coefficient = 0
+    min_abs_standardized_coefficient = 0
   )
 
   expect_true(

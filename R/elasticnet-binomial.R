@@ -218,7 +218,8 @@ fit_elasticnet_binomial <- function(
     n_models_successful = n_models_successful,
     annotation = annotation,
     effect_transform = exp,
-    effect_label = "Odds ratio per 1-SD feature increase"
+    effect_label = "Odds ratio per 1-SD feature increase",
+    effect_multiplier = design$feature_sd
   )
 
   covariate_summary <- summarize_selected_features(
@@ -226,7 +227,7 @@ fit_elasticnet_binomial <- function(
     n_models_successful = n_models_successful,
     annotation = NULL,
     effect_transform = exp,
-    effect_label = "Odds ratio per 1-SD covariate increase"
+    effect_label = "Odds ratio per 1-unit covariate increase"
   )
 
   sample_summary <- model_data$sample_summary |>
@@ -259,6 +260,7 @@ fit_elasticnet_binomial <- function(
       ),
       sample_summary = sample_summary,
       feature_names = design$feature_names,
+      feature_sd = design$feature_sd,
       selected_features = selected_features,
       covariate_coefficients = covariate_summary,
       repetition_summary = fitted_models$repetition_summary,

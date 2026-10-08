@@ -1,17 +1,17 @@
 #' Classify elastic-net features by stability and effect magnitude
 #'
 #' Assigns ordered stability categories from selection frequency and ordered
-#' effect-magnitude categories from absolute median elastic-net coefficients.
+#' effect-magnitude categories from absolute median standardized elastic-net coefficients.
 #' Each cutoff is the inclusive lower bound for its named category.
 #'
 #' @param features A data frame containing numeric `percent` and
-#'   `median_coefficient` columns, such as the output of
+#'   `median_standardized_coefficient` columns, such as the output of
 #'   [selected_features()].
 #' @param frequency_cutoffs Named numeric vector of inclusive lower bounds for
 #'   selection-frequency categories. Values must be strictly increasing and
 #'   begin at 0.
 #' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
-#'   absolute median-coefficient categories. Values must be strictly increasing
+#'   absolute median standardized-coefficient categories. Values must be strictly increasing
 #'   and begin at 0.
 #'
 #' @return `features` with ordered-factor columns `frequency_class`,
@@ -72,7 +72,7 @@ classify_elasticnet_features <- function(
     rlang::abort("`features` must be a data frame.")
   }
 
-  required_columns <- c("percent", "median_coefficient")
+  required_columns <- c("percent", "median_standardized_coefficient")
   missing_columns <- setdiff(required_columns, names(features))
 
   if (length(missing_columns) > 0L) {
@@ -87,22 +87,22 @@ classify_elasticnet_features <- function(
 
   if (
     !is.numeric(features$percent) ||
-      !is.numeric(features$median_coefficient)
+      !is.numeric(features$median_standardized_coefficient)
   ) {
     rlang::abort(
-      "`percent` and `median_coefficient` must both be numeric."
+      "`percent` and `median_standardized_coefficient` must both be numeric."
     )
   }
 
   if (
     anyNA(features$percent) ||
-      anyNA(features$median_coefficient) ||
+      anyNA(features$median_standardized_coefficient) ||
       any(!is.finite(features$percent)) ||
-      any(!is.finite(features$median_coefficient))
+      any(!is.finite(features$median_standardized_coefficient))
   ) {
     rlang::abort(
       paste0(
-        "`percent` and `median_coefficient` must contain finite, ",
+        "`percent` and `median_standardized_coefficient` must contain finite, ",
         "non-missing values."
       )
     )
@@ -124,7 +124,7 @@ classify_elasticnet_features <- function(
   )
 
   effect_index <- findInterval(
-    x = abs(features$median_coefficient),
+    x = abs(features$median_standardized_coefficient),
     vec = unname(effect_cutoffs)
   )
 

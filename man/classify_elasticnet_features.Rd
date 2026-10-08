@@ -12,7 +12,7 @@ classify_elasticnet_features(
 }
 \arguments{
 \item{features}{A data frame containing numeric \code{percent} and
-\code{median_coefficient} columns, such as the output of
+\code{median_standardized_coefficient} columns, such as the output of
 \code{\link[=selected_features]{selected_features()}}.}
 
 \item{frequency_cutoffs}{Named numeric vector of inclusive lower bounds for
@@ -20,7 +20,7 @@ selection-frequency categories. Values must be strictly increasing and
 begin at 0.}
 
 \item{effect_cutoffs}{Named numeric vector of inclusive lower bounds for
-absolute median-coefficient categories. Values must be strictly increasing
+absolute median standardized-coefficient categories. Values must be strictly increasing
 and begin at 0.}
 }
 \value{
@@ -29,6 +29,6 @@ and begin at 0.}
 }
 \description{
 Assigns ordered stability categories from selection frequency and ordered
-effect-magnitude categories from absolute median elastic-net coefficients.
+effect-magnitude categories from absolute median standardized elastic-net coefficients.
 Each cutoff is the inclusive lower bound for its named category.
 }

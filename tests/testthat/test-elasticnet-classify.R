@@ -2,7 +2,7 @@ test_that("elastic-net feature classification assigns default categories", {
   features <- data.frame(
     feature = c("feature_1", "feature_2", "feature_3", "feature_4"),
     percent = c(0, 20, 50, 80),
-    median_coefficient = c(0, 0.05, -0.10, 0.30)
+    median_standardized_coefficient = c(0, 0.05, -0.10, 0.30)
   )
 
   classified <- classify_elasticnet_features(features)
@@ -33,7 +33,7 @@ test_that("elastic-net feature classification assigns default categories", {
 test_that("elastic-net feature classification uses absolute coefficient size", {
   features <- data.frame(
     percent = c(80, 80, 80),
-    median_coefficient = c(-0.30, -0.10, -0.05)
+    median_standardized_coefficient = c(-0.30, -0.10, -0.05)
   )
 
   classified <- classify_elasticnet_features(features)
@@ -56,7 +56,7 @@ test_that("elastic-net feature classification respects inclusive boundaries", {
       80,
       100
     ),
-    median_coefficient = c(
+    median_standardized_coefficient = c(
       0,
       0.049,
       0.05,
@@ -102,7 +102,7 @@ test_that("elastic-net feature classification respects inclusive boundaries", {
 test_that("elastic-net feature classification supports custom cutoffs", {
   features <- data.frame(
     percent = c(0, 25, 75),
-    median_coefficient = c(0.01, 0.10, -0.50)
+    median_standardized_coefficient = c(0.01, 0.10, -0.50)
   )
 
   classified <- classify_elasticnet_features(
@@ -143,7 +143,7 @@ test_that("elastic-net feature classification retains input columns and ordering
     feature = c("feature_b", "feature_a"),
     feature_label = c("Feature B", "Feature A"),
     percent = c(50, 20),
-    median_coefficient = c(0.10, -0.05),
+    median_standardized_coefficient = c(0.10, -0.05),
     stringsAsFactors = FALSE
   )
 
@@ -155,7 +155,7 @@ test_that("elastic-net feature classification retains input columns and ordering
       "feature",
       "feature_label",
       "percent",
-      "median_coefficient",
+      "median_standardized_coefficient",
       "frequency_class",
       "effect_class",
       "signal_class"
@@ -169,7 +169,7 @@ test_that("elastic-net feature classification retains input columns and ordering
 test_that("elastic-net feature classification handles no selected features", {
   features <- data.frame(
     percent = numeric(),
-    median_coefficient = numeric()
+    median_standardized_coefficient = numeric()
   )
 
   classified <- classify_elasticnet_features(features)
@@ -202,7 +202,7 @@ test_that("elastic-net feature classification validates feature input", {
 
   expect_error(
     classify_elasticnet_features(
-      data.frame(median_coefficient = 0.1)
+      data.frame(median_standardized_coefficient = 0.1)
     ),
     "must contain these columns"
   )
@@ -211,7 +211,7 @@ test_that("elastic-net feature classification validates feature input", {
     classify_elasticnet_features(
       data.frame(
         percent = "50",
-        median_coefficient = 0.1
+        median_standardized_coefficient = 0.1
       )
     ),
     "must both be numeric"
@@ -221,7 +221,7 @@ test_that("elastic-net feature classification validates feature input", {
     classify_elasticnet_features(
       data.frame(
         percent = 101,
-        median_coefficient = 0.1
+        median_standardized_coefficient = 0.1
       )
     ),
     "0 to 100"
@@ -231,7 +231,7 @@ test_that("elastic-net feature classification validates feature input", {
     classify_elasticnet_features(
       data.frame(
         percent = NA_real_,
-        median_coefficient = 0.1
+        median_standardized_coefficient = 0.1
       )
     ),
     "finite, non-missing"
@@ -241,7 +241,7 @@ test_that("elastic-net feature classification validates feature input", {
     classify_elasticnet_features(
       data.frame(
         percent = 50,
-        median_coefficient = Inf
+        median_standardized_coefficient = Inf
       )
     ),
     "finite, non-missing"
@@ -251,7 +251,7 @@ test_that("elastic-net feature classification validates feature input", {
 test_that("elastic-net feature classification validates cutoff vectors", {
   features <- data.frame(
     percent = 50,
-    median_coefficient = 0.1
+    median_standardized_coefficient = 0.1
   )
 
   expect_error(
@@ -290,7 +290,7 @@ test_that("elastic-net feature classification validates cutoff vectors", {
 test_that("elastic-net feature signal classes retain all category levels", {
   features <- data.frame(
     percent = 100,
-    median_coefficient = 1
+    median_standardized_coefficient = 1
   )
 
   classified <- classify_elasticnet_features(features)

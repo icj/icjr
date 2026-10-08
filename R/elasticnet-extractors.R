@@ -83,3 +83,21 @@ repetition_summary <- function(x, ...) {
 repetition_summary.icjr_elasticnet_fit <- function(x, ...) {
   x$repetition_summary
 }
+
+#' Extract feature standard deviations used for SD-scale effect reporting
+#'
+#' @param x An `icjr_elasticnet_fit` object.
+#' @param ... Unused.
+#'
+#' @return A named numeric vector of standard deviations for modeled penalized
+#'   features. These values are used to convert original-scale coefficients to
+#'   reported per-1-SD effects.
+#' @export
+feature_standard_deviations <- function(x, ...) {
+  UseMethod("feature_standard_deviations")
+}
+
+#' @export
+feature_standard_deviations.icjr_elasticnet_fit <- function(x, ...) {
+  x$feature_sd
+}

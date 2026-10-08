@@ -1,29 +1,29 @@
 #' Extract notable elastic-net features
 #'
 #' Returns a compact reporting table of penalized features that meet minimum
-#' selection-frequency and absolute median-coefficient thresholds.
+#' selection-frequency and absolute median standardized-coefficient thresholds.
 #'
 #' @param x An `icjr_elasticnet_fit` object.
 #' @param min_percent Minimum percentage of successful repeated fits that must
 #'   select a feature.
-#' @param min_abs_coefficient Minimum absolute median penalized coefficient.
+#' @param min_abs_standardized_coefficient Minimum absolute median standardized coefficient.
 #' @param n_features Maximum number of features to return. Set to `Inf` to
 #'   return all eligible features.
 #' @param frequency_cutoffs Named numeric vector of inclusive lower bounds for
 #'   selection-frequency categories passed to [classify_elasticnet_features()].
 #' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
-#'   absolute median-coefficient categories passed to
+#'   absolute median standardized-coefficient categories passed to
 #'   [classify_elasticnet_features()].
 #'
 #' @return A data frame containing notable features, ordered by decreasing
-#'   selection frequency and absolute median coefficient magnitude. The output
+#'   selection frequency and absolute median standardized coefficient magnitude. The output
 #'   includes the median, minimum, and maximum coefficients across repeated
 #'   fits that selected each feature.
 #' @export
 notable_features <- function(
   x,
   min_percent = 50,
-  min_abs_coefficient = 0.10,
+  min_abs_standardized_coefficient = 0.10,
   n_features = Inf,
   frequency_cutoffs = c(
     Rare = 0,
@@ -53,13 +53,13 @@ notable_features <- function(
   }
 
   if (
-    length(min_abs_coefficient) != 1L ||
-      !is.numeric(min_abs_coefficient) ||
-      is.na(min_abs_coefficient) ||
-      min_abs_coefficient < 0
+    length(min_abs_standardized_coefficient) != 1L ||
+      !is.numeric(min_abs_standardized_coefficient) ||
+      is.na(min_abs_standardized_coefficient) ||
+      min_abs_standardized_coefficient < 0
   ) {
     rlang::abort(
-      "`min_abs_coefficient` must be one number greater than or equal to 0."
+      "`min_abs_standardized_coefficient` must be one number greater than or equal to 0."
     )
   }
 
@@ -82,7 +82,7 @@ notable_features <- function(
 
   features <- features[
     features$percent >= min_percent &
-      abs(features$median_coefficient) >= min_abs_coefficient,
+      abs(features$median_standardized_coefficient) >= min_abs_standardized_coefficient,
     ,
     drop = FALSE
   ]
@@ -90,7 +90,7 @@ notable_features <- function(
   features <- features[
     order(
       -features$percent,
-      -abs(features$median_coefficient),
+      -abs(features$median_standardized_coefficient),
       features$feature
     ),
     ,
@@ -106,6 +106,7 @@ notable_features <- function(
     "median_coefficient",
     "min_coefficient",
     "max_coefficient",
+    "median_standardized_coefficient",
     "median_effect",
     "median_effect_label",
     "sign_consistency",

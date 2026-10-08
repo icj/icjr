@@ -87,7 +87,14 @@ build_elasticnet_design <- function(x, covariate_matrix, feature_filter) {
     feature_filter = feature_filter
   )
 
-  feature_matrix <- scale(x[, feature_names, drop = FALSE])
+  feature_matrix <- x[, feature_names, drop = FALSE]
+  feature_sd <- apply(feature_matrix, 2, stats::sd)
+
+  if (any(!is.finite(feature_sd) | feature_sd == 0)) {
+    rlang::abort(
+      "Selected features must have finite, non-zero standard deviations."
+    )
+  }
 
   design_matrix <- if (is.null(covariate_matrix)) {
     feature_matrix
@@ -113,6 +120,7 @@ build_elasticnet_design <- function(x, covariate_matrix, feature_filter) {
     } else {
       colnames(covariate_matrix)
     },
+    feature_sd = feature_sd,
     penalty_factor = penalty_factor
   )
 }
@@ -150,7 +158,7 @@ fit_repeated_cv_glmnet <- function(
       alpha = alpha,
       nfolds = nfolds_used,
       type.measure = type_measure,
-      standardize = FALSE,
+      standardize = TRUE,
       penalty.factor = penalty_factor
     )
 
@@ -276,7 +284,8 @@ summarize_selected_features <- function(
   n_models_successful,
   annotation,
   effect_transform,
-  effect_label
+  effect_label,
+  effect_multiplier = NULL
 ) {
   if (n_models_successful == 0L) {
     return(empty_selection_summary(effect_label))
@@ -307,9 +316,18 @@ summarize_selected_features <- function(
       .groups = "drop"
     ) |>
     dplyr::mutate(
-      median_effect = effect_transform(.data$median_coefficient),
+      effect_multiplier = if (is.null(effect_multiplier)) {
+        1
+      } else {
+        unname(effect_multiplier[.data$feature])
+      },
+      median_standardized_coefficient = .data$median_coefficient * .data$effect_multiplier,
+      median_effect = effect_transform(
+        .data$median_standardized_coefficient
+      ),
       median_effect_label = effect_label
-    )
+    ) |>
+    dplyr::select(-"effect_multiplier")
 
   if (!is.null(annotation)) {
     if (
