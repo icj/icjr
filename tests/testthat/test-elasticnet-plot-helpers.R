@@ -74,7 +74,8 @@ test_that("prepare_elasticnet_plot_data orders, labels, and classifies features"
       data.frame(
         feature = c("a", "b", "c", "d"),
         percent = c(80, 100, 80, 60),
-        median_coefficient = c(-0.2, 0.5, 0.2, 0),
+        median_coefficient = c(-2, 5, 2, 0),
+        median_effect = c(-0.2, 0.5, 0.2, 0),
         feature_label = c("Alpha", NA, "Alpha", ""),
         stringsAsFactors = FALSE
       )
@@ -122,18 +123,18 @@ test_that("validate_elasticnet_plot_labels rejects invalid labels", {
 test_that("elasticnet_effect_label matches the model family", {
   expect_equal(
     elasticnet_effect_label(list(specification = list(family = "gaussian"))),
-    "Median coefficient"
+    "Median standardized coefficient (per 1-SD increase)"
   )
   expect_equal(
     elasticnet_effect_label(list(specification = list(family = "binomial"))),
-    "Median log odds ratio"
+    "Median standardized log odds ratio (per 1-SD increase)"
   )
   expect_equal(
     elasticnet_effect_label(list(specification = list(family = "cox"))),
-    "Median log hazard ratio"
+    "Median standardized log hazard ratio (per 1-SD increase)"
   )
   expect_equal(
     elasticnet_effect_label(list(specification = list(family = "other"))),
-    "Median coefficient"
+    "Median standardized coefficient (per 1-SD increase)"
   )
 })

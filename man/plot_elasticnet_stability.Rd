@@ -43,7 +43,7 @@ selection-frequency categories used to classify and optionally label
 features.}
 
 \item{effect_cutoffs}{Named numeric vector of inclusive lower bounds for
-absolute median-coefficient categories used to classify and optionally
+absolute median standardized-effect categories used to classify and optionally
 label features.}
 
 \item{title}{Plot title.}
@@ -65,6 +65,6 @@ plus \code{frequency_class}, \code{effect_class}, \code{signal_class}, and \code
 }
 \description{
 Plots selection frequency for the most stable penalized features across
-repeated elastic-net fits. Point color shows coefficient direction and point
-size shows the absolute median penalized coefficient.
+repeated elastic-net fits. Point color shows standardized-effect direction
+and point size shows the absolute median standardized effect.
 }

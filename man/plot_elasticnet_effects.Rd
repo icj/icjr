@@ -12,7 +12,7 @@ plot_elasticnet_effects(
   label_signal = NULL,
   frequency_cutoffs = c(Rare = 0, Low = 20, Medium = 50, High = 80),
   effect_cutoffs = c(Negligible = 0, Weak = 0.05, Moderate = 0.1, Strong = 0.3),
-  title = "Elastic-net feature effect magnitudes",
+  title = "Elastic-net standardized feature effect magnitudes",
   subtitle = NULL,
   caption = NULL,
   tag = NULL,
@@ -39,7 +39,7 @@ selection-frequency categories used to classify and optionally label
 features.}
 
 \item{effect_cutoffs}{Named numeric vector of inclusive lower bounds for
-absolute median-coefficient categories used to classify and optionally
+absolute median standardized-effect categories used to classify and optionally
 label features.}
 
 \item{title}{Plot title.}
@@ -51,7 +51,7 @@ of displayed features is used.}
 
 \item{tag}{Plot tag.}
 
-\item{x_label}{X-axis label. If \code{NULL}, a family-specific coefficient-scale
+\item{x_label}{X-axis label. If \code{NULL}, a family-specific standardized-effect
 label is used.}
 
 \item{y_label}{Y-axis label.}
@@ -61,7 +61,7 @@ A \code{ggplot} object. Its \code{data} element contains the plotted features
 plus \code{frequency_class}, \code{effect_class}, \code{signal_class}, and \code{point_label}.
 }
 \description{
-Plots absolute median penalized coefficient magnitude for the most stable
-selected features. Point color shows coefficient direction and point size
-shows selection frequency across repeated fits.
+Plots absolute median standardized effect magnitude for the most stable
+selected features. Point color shows standardized-effect direction and point
+size shows selection frequency across repeated fits.
 }

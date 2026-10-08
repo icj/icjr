@@ -55,7 +55,7 @@ prepare_elasticnet_plot_data <- function(
   features <- features[
     order(
       -features$percent,
-      -abs(features$median_coefficient),
+      -abs(features$median_effect),
       features$feature
     ),
     ,
@@ -80,16 +80,16 @@ prepare_elasticnet_plot_data <- function(
   features$plot_label <- make.unique(features$plot_label)
 
   features$direction <- ifelse(
-    features$median_coefficient > 0,
+    features$median_effect > 0,
     "Positive",
     ifelse(
-      features$median_coefficient < 0,
+      features$median_effect < 0,
       "Negative",
       "Zero"
     )
   )
 
-  features$absolute_coefficient <- abs(features$median_coefficient)
+  features$absolute_coefficient <- abs(features$median_effect)
 
   features
 }
@@ -136,10 +136,10 @@ validate_elasticnet_plot_labels <- function(
 elasticnet_effect_label <- function(x) {
   switch(
     x$specification$family,
-    gaussian = "Median coefficient",
-    binomial = "Median log odds ratio",
-    cox = "Median log hazard ratio",
-    "Median coefficient"
+    gaussian = "Median standardized coefficient (per 1-SD increase)",
+    binomial = "Median standardized log odds ratio (per 1-SD increase)",
+    cox = "Median standardized log hazard ratio (per 1-SD increase)",
+    "Median standardized coefficient (per 1-SD increase)"
   )
 }
 
@@ -199,8 +199,8 @@ add_elasticnet_plot_labels <- function(
 #' Plot elastic-net feature selection stability
 #'
 #' Plots selection frequency for the most stable penalized features across
-#' repeated elastic-net fits. Point color shows coefficient direction and point
-#' size shows the absolute median penalized coefficient.
+#' repeated elastic-net fits. Point color shows standardized-effect direction
+#' and point size shows the absolute median standardized effect.
 #'
 #' @param x An `icjr_elasticnet_fit` object.
 #' @param n_features Maximum number of selected features to display. Set to
@@ -216,7 +216,7 @@ add_elasticnet_plot_labels <- function(
 #'   selection-frequency categories used to classify and optionally label
 #'   features.
 #' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
-#'   absolute median-coefficient categories used to classify and optionally
+#'   absolute median standardized-effect categories used to classify and optionally
 #'   label features.
 #' @param title Plot title.
 #' @param subtitle Plot subtitle. If `NULL`, a subtitle describing the number
@@ -362,7 +362,7 @@ plot_elasticnet_stability <- function(
       name = "Coefficient direction"
     ) +
     ggplot2::scale_size_continuous(
-      name = paste0("Absolute ", tolower(effect_label)),
+      name = paste0("Absolute ", sub("^Median ", "", effect_label)),
       range = c(2.5, 7)
     ) +
     ggplot2::scale_x_continuous(
@@ -400,9 +400,9 @@ plot_elasticnet_stability <- function(
 
 #' Plot elastic-net feature effect magnitudes
 #'
-#' Plots absolute median penalized coefficient magnitude for the most stable
-#' selected features. Point color shows coefficient direction and point size
-#' shows selection frequency across repeated fits.
+#' Plots absolute median standardized effect magnitude for the most stable
+#' selected features. Point color shows standardized-effect direction and point
+#' size shows selection frequency across repeated fits.
 #'
 #' @param x An `icjr_elasticnet_fit` object.
 #' @param n_features Maximum number of selected features to display. Set to
@@ -416,14 +416,14 @@ plot_elasticnet_stability <- function(
 #'   selection-frequency categories used to classify and optionally label
 #'   features.
 #' @param effect_cutoffs Named numeric vector of inclusive lower bounds for
-#'   absolute median-coefficient categories used to classify and optionally
+#'   absolute median standardized-effect categories used to classify and optionally
 #'   label features.
 #' @param title Plot title.
 #' @param subtitle Plot subtitle. If `NULL`, a subtitle describing the number
 #'   of displayed features is used.
 #' @param caption Plot caption.
 #' @param tag Plot tag.
-#' @param x_label X-axis label. If `NULL`, a family-specific coefficient-scale
+#' @param x_label X-axis label. If `NULL`, a family-specific standardized-effect
 #'   label is used.
 #' @param y_label Y-axis label.
 #'
@@ -448,7 +448,7 @@ plot_elasticnet_effects <- function(
     Moderate = 0.10,
     Strong = 0.30
   ),
-  title = "Elastic-net feature effect magnitudes",
+  title = "Elastic-net standardized feature effect magnitudes",
   subtitle = NULL,
   caption = NULL,
   tag = NULL,
@@ -504,7 +504,7 @@ plot_elasticnet_effects <- function(
   }
 
   if (is.null(x_label)) {
-    x_label <- paste0("Absolute ", tolower(effect_label))
+    x_label <- paste0("Absolute ", sub("^Median ", "", effect_label))
   }
 
   label_layer <- if (all(is.na(features$point_label))) {

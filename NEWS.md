@@ -1,5 +1,13 @@
 # icjr 0.0.0.9000
 
+- Added `feature_standard_deviations()` to retrieve the per-feature standard
+  deviations used for 1-SD elastic-net effect reporting.
+- Improved elastic-net stability and effect-magnitude plots to use standardized
+  per-1-SD feature effects for ranking, direction, and magnitude displays.
+  Plot labels now state the standardized effect scale explicitly.
+- Improved elastic-net feature classification and `notable_features()` to use
+  median standardized coefficients for effect-magnitude thresholds and
+  reporting.
 - Added repeated Gaussian elastic-net modeling with configurable feature filtering,
   unpenalized adjustment covariates, repeated cross-validation, and
   feature-selection stability summaries.
